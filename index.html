@@ -29,15 +29,17 @@
     // Array.prototype.filter()
     // 1. Filter the list of inventors for those who were born in the 1500's
 
-	// Verbose try
+	// Verbose sort, not using arrow function
     const fifteen = inventors.filter(function(inventor) {
 		if (inventor.year >= 1500 && inventor.year < 1600) {
-			return true; // Keep it
+			return true; // Keep this array entry.
 		} else {
-			return false; // Technically this line isn't required
+			return false; // Remove the array entry. Technically this line isn't 
+						  // required in this case as the default is false and the element
+						  // will be discarded.
 		}
 	});
-	console.log(fifteen); // (2) [{…}, {…}]
+	console.log(fifteen); // ugly output (2) [{…}, {…}]
 	console.table(fifteen); // Produces nice table
 
 	// Much more abbreviated version, using arrow functions
@@ -45,14 +47,24 @@
 	console.table(fifteen_try2);
 
     // Array.prototype.map()
-    // 2. Give us an array of the inventors' first and last names
+    // 2. Give us an array of the inventors' first and last names, using an arrow function
 	const fullNames = inventors.map(inventor => inventor.first + ' ' + inventor.last);
 	console.log(fullNames);
 
     // Array.prototype.sort()
     // 3. Sort the inventors by birthdate, oldest to youngest
 
-	// Verbose version
+	/* 
+	 * The closure function used by sort always takes two elements, and the 
+	 * function compares those two elements. If a positive value is returned, it 
+	 * implies the first value is larger. If a negative value is returned, it 
+	 * implies the first value is smaller. The array returned from sort puts the
+	 * lowest value items first, highest value items last in the resulting array.
+	 * ie. ascending order, thus if you want something different (such as descending
+	 * order), switch the positive vs negative return values.
+	 */
+
+	// Verbose version, not using arrow functions.
 	const ordered = inventors.sort(function(firstPerson, secondPerson) {
 		// Younger people (larger numerical birth year) are ranked higher, and the result will 
 		// be the person with the smallest numerical birth year will be listed first in the array
@@ -67,7 +79,7 @@
 
 	console.table(ordered);
 
-	// Short version
+	// Short version, using arrow functions.
 	const ordered_try2 = inventors.sort((a,b) => a.year > b.year ? 1 : -1);
 	console.table(ordered_try2);
 
@@ -83,15 +95,18 @@
 	
 	// console.log(totalYears);
 
-	// And turns it into this ...
+	// And turns it into this ... Note that "total" is used as our
+	// accumulator var.
 
 	const totalYears = inventors.reduce((total, inventor) => {
 		return total + (inventor.passed - inventor.year);
 	}, 0); // That zero is the initial value for the "total" var
+		   // Without it, the initial value of "total" is undefined.
 
 	console.log(totalYears);
 
-    // 5. Sort the inventors by years lived
+    // 5. A more complex example of sort. 
+	//    Sort the inventors by years lived.
 	const oldest = inventors.sort(function(a, b){
 		const yearsA = a.passed - a.year;
 		const yearsB = b.passed - b.year;
@@ -106,29 +121,41 @@
 
 	console.table(oldest);
 
-    // 6. create a list of Boulevards in Paris that contain 'de' anywhere in the name
+    // 6. create a list of Boulevards in Paris that contain 'de' anywhere in the name.
+	// The following code is commented out because it requires the following URL to be 
+	// running in the browser for the code to work:
     // https://en.wikipedia.org/wiki/Category:Boulevards_in_Paris
+	// In other words, load that URL using Chrome, open Chrom tools, and paste the follwing 
+	// code, uncommented, into the console.
+
 //	const category = document.querySelector('.mw-category');
 //	var links = category.querySelectorAll('a');
 
-	// The above two lines could be combined like this:
+	// Note: the above two lines could be combined like this:
 	// const links = document.querySelector('.mw-category').querySelectorAll('a');
+	// or better yet even this:
+	// const links = document.querySelectorAll('.mw-category a');
 
-	// Note that links is not an array. Its a list of nodes. Array functions are not
-	// available. Need to convert to an array. Thus, call the query like this:
+	// Note that links is not an array, which means we have no ability to use our 
+	// friends sort, map, filter, etc. So, lets convert it to an array. Thus, call the 
+	// 'category query' like this instead which provides an array from a Node List:
 //	links = Array.from(category.querySelectorAll('a'));
 
-	// Now we can use the array functions like map, sort, reduce, etc.
+	// Now we can use the array functions like map, sort, reduce, etc. In this case, we will
+	// first use map to only get the text content from each link, and then we'll call 
+	// filter to create an array that only contains the 'de' letters. 
 //	const de = links
 //				.map(link => link.textContent) // Get just the text part of the link
 //				.filter(streetName => streetName.includes('de')); // Just the streets the have 'de'
+//  console.table(de);
 
-
-    // 7. sort Exercise
+    // 7. Another sort exercise
     // Sort the people alphabetically by last name
 
 	const alpha = people.sort(function(person1, person2) {
+	// Could be an arrow function, but I'll comment this one out and use a regular closure
 	//const alpha = people.sort((person1, person2) ==> {
+		// Split on a comma and a space, creating a two element array
 		const [person1First, person1Last] = person1.split([, ]);
 		const [person2First, person2Last] = person2.split([, ]);
 
@@ -140,7 +167,7 @@
 
 	console.table(alpha);
 
-    // 8. Reduce Exercise
+    // 8. Complex reduce exercise, putting indidividual tallies into a tally object.
     // Sum up the instances of each of these
     const data = ['car', 'car', 'truck', 'truck', 'bike', 'walk', 'car', 'van', 'bike', 'walk', 'car', 'van', 'car', 'truck' ];
 	
@@ -150,14 +177,14 @@
 
 		// check to see if there is an item key in the obj first, if not create one and assign
 		// it an initial value of zero. This will become the tally for each "item" found in 
-		// the data array.
+		// the data array, car, bike, truck, walk, etc.
 		if (!obj[item]) {
 			obj[item] = 0;
 		}
 
 		obj[item]++;
 		return obj;
-	}, {}); // the {} is the initial value for the 'obj' parameter
+	}, {}); // the {} is the initial value for the 'obj' parameter, in this case an empty object
 
 	console.table(transportation);
 
